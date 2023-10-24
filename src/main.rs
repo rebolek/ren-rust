@@ -18,18 +18,20 @@ struct Value {
     value: ValueContent,
 }
 
-// functions
-
-fn make_value(ren_type: String, value: ValueContent) -> Value {
-    Value {
-        ren_type,
-        value,
+impl Value {
+    fn make(ren_type: String, value: ValueContent) -> Value {
+        Value {
+            ren_type,
+            value,
+        }
     }
 }
 
+// functions
+
 fn grab_integer(string: &str, start: usize, end: usize) -> Value {
     let content = (&string[start..end]).parse::<i32>().unwrap();
-    make_value(
+    Value::make(
         "integer".to_string(),
         ValueContent::TInteger(content),
     )
@@ -42,15 +44,14 @@ fn parse_line(input: &str) -> Vec<Value> {
     let mut word_lexer = lexer::State::init();
     loop {
         let start = mark;
+
         if word_lexer.match_integer(&input) {
             mark = word_lexer.get();
             let value = grab_integer(&input, start, mark);
-            println!("MATCHED INT '{:?}', mark is {mark}", value);
             values.push(value);
         } else
         if word_lexer.match_delimiter(&input) {
             mark = word_lexer.get();
-            println!("MATCHED WS '{input}', mark is {mark}");
         }
 
         let len = input.len();
