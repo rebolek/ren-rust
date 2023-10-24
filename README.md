@@ -3,7 +3,7 @@ Ren parser in Rust
 
 This is a Rust parser for [Ren](https://github.com/humanistic/REN).
 
-Currently it parses integers and whitespaces. Yay!
+Currently it parses integers, strings poorly and whitespaces. Yay!
 
 It returns vector with Ren values.
 
