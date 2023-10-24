@@ -5,37 +5,48 @@ pub mod ren_lexer;
 use crate::ren_lexer::lexer;
 
 #[derive(Debug)]
-enum ValueContent {
-    TInteger(i32),
-    TString(String),
-    TWord(String),
+enum ValueType {
+    Integer     (i32),
+    String      (String),
+    Word        (String),
 }
 
 #[derive(Debug)]
 struct Value {
     ren_type: String,
 //    rust_type: String,
-    value: ValueContent,
+    value: ValueType,
 }
 
 impl Value {
-    fn make(ren_type: String, value: ValueContent) -> Value {
+    fn make(ren_type: String, value: ValueType) -> Self {
         Value {
             ren_type,
             value,
         }
     }
+    fn grab(
+        source:   &str,
+        start:    usize,
+        end:      usize,
+        ren_type: &str,
+    )   -> Value {
+        let content: ValueType = match ren_type {
+            "integer" => {
+                ValueType::Integer((&source[start..end]).parse::<i32>().unwrap())
+            },
+            _ => {
+                ValueType::String(source[start..end].to_string())
+            },
+        };
+        Value::make(
+            "integer".to_string(),
+            content,
+        )
+    }
 }
 
 // functions
-
-fn grab_integer(string: &str, start: usize, end: usize) -> Value {
-    let content = (&string[start..end]).parse::<i32>().unwrap();
-    Value::make(
-        "integer".to_string(),
-        ValueContent::TInteger(content),
-    )
-}
 
 fn parse_line(input: &str) -> Vec<Value> {
     let mut mark = 0;
@@ -47,7 +58,8 @@ fn parse_line(input: &str) -> Vec<Value> {
 
         if word_lexer.match_integer(&input) {
             mark = word_lexer.get();
-            let value = grab_integer(&input, start, mark);
+            //let value = grab_integer(&input, start, mark);
+            let value = Value::grab(&input, start, mark, "integer");
             values.push(value);
         } else
         if word_lexer.match_delimiter(&input) {
