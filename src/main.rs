@@ -35,12 +35,15 @@ impl Value {
             "integer" => {
                 ValueType::Integer((&source[start..end]).parse::<i32>().unwrap())
             },
+            "string" => {
+                ValueType::String(source[start..end].to_string())
+            }
             _ => {
                 ValueType::String(source[start..end].to_string())
             },
         };
         Value::make(
-            "integer".to_string(),
+            ren_type.to_string(),
             content,
         )
     }
@@ -56,10 +59,16 @@ fn parse_line(input: &str) -> Vec<Value> {
     loop {
         let start = mark;
 
+        println!("AT index {start}");
+
         if word_lexer.match_integer(&input) {
             mark = word_lexer.get();
-            //let value = grab_integer(&input, start, mark);
             let value = Value::grab(&input, start, mark, "integer");
+            values.push(value);
+        } else
+        if word_lexer.match_string(&input) {
+            mark = word_lexer.get();
+            let value = Value::grab(&input, start + 1, mark -1, "string");
             values.push(value);
         } else
         if word_lexer.match_delimiter(&input) {

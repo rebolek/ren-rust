@@ -40,36 +40,57 @@ pub mod lexer {
             //State::set(&mut State {mark: Some(input.len())}, Some(input.len()));
         }
 
-        pub fn match_integer(&mut self, input: &str) -> bool {
-            println!("Starting at {:?}", self.mark);
+        pub fn match_string(&mut self, input: &str) -> bool {
+            Self::match_inline_string(self, &input)
+        }
+
+        fn match_inline_string(&mut self, input: &str) -> bool {
             let string = &input[self.mark..];
-            println!("Matching {string}");
-            let mut count = 0;
             for (index, char) in string.chars().enumerate() {
-                println!("Match at {index} = {char}");
+                println!("checking {char} at {index}");
                 match (char, index) {
-                    (c, 0) if CHS_SIGNS.contains(&c) => {count += 1}, // + or -
-                    (c, _) if c.is_digit(10) => {count += 1},         // digit
-                    (c, i) if self.match_delimiter_char(c) && count > 1 => {
-                       self.mark += count;
-                       println!("found delim at {i} and mark is {}", self.mark);
+                    (c, 0) if c != '"' => { // match starting quotes
+                        println!("no starting quotes");
+                        return false;
+                    },
+                    (c, 0) if c == '"' => { // match starting quotes
+                        println!("starting quotes");
+                    },
+                    (c, i) if c == '"' && i > 1 => { // match ending quotes
+                        self.mark += i + 1;
+                        println!("ending quotes, mark at +{i}");
+                        return true;
+                    },
+                    _ => {
+                        println!("string content");
+                    },
+                }
+            }
+            true
+        }
+
+        pub fn match_integer(&mut self, input: &str) -> bool {
+            let string = &input[self.mark..];
+            for (index, char) in string.chars().enumerate() {
+                match (char, index) {
+                    (c, 0) if CHS_SIGNS.contains(&c) => {}, // + or -
+                    (c, _) if c.is_digit(10) => {},         // digit
+                    (c, i) if self.match_delimiter_char(c) && i > 1 => {
+                       self.mark += i;
                        return true;
                     },                                      // after int
                     _ => {
-                        println!("matched nothing!");
                         return false;
                     },                                      // fail
                 }
             }
-            self.mark += count;
+            println!("FIXME: This means there's no WS at end");
             true
         }
 
         pub fn match_delimiter(&mut self, input: &str) -> bool {
-            println!("Matching delimiter");
             let string = &input[self.mark..];
             if self.match_delimiter_char(string.chars().next().unwrap()) {
-                println!("old mark {:?}", self.mark);
                 self.mark += 1;
                 true
             } else {
