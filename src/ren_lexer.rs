@@ -49,14 +49,14 @@ pub mod lexer {
             for (index, char) in string.chars().enumerate() {
                 println!("checking {char} at {index}");
                 match (char, index) {
-                    (c, 0) if c != '"' => { // match starting quotes
+                    (c, 0) if c != '"' => { // is this really a string?
                         println!("no starting quotes");
                         return false;
                     },
                     (c, 0) if c == '"' => { // match starting quotes
                         println!("starting quotes");
                     },
-                    (c, i) if c == '"' && i > 1 => { // match ending quotes
+                    (c, i) if c == '"' && i > 0 => { // match ending quotes
                         self.mark += i + 1;
                         println!("ending quotes, mark at +{i}");
                         return true;
