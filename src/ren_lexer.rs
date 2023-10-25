@@ -46,6 +46,7 @@ pub mod lexer {
 
         fn match_inline_string(&mut self, input: &str) -> bool {
             let string = &input[self.mark..];
+            let mut is_escaped = false;
             for (index, char) in string.chars().enumerate() {
                 println!("checking {char} at {index}");
                 match (char, index) {
@@ -53,15 +54,24 @@ pub mod lexer {
                         println!("no starting quotes");
                         return false;
                     },
-                    (c, 0) if c == '"' => { // match starting quotes
+                    ('"', 0) => { // match starting quotes
                         println!("starting quotes");
                     },
-                    (c, i) if c == '"' && i > 0 => { // match ending quotes
-                        self.mark += i + 1;
+                    ('"', i) if is_escaped => { // escaped quotes, safely ignore
+                        println!("escaped quotes");
+                        is_escaped = false;
+                    },
+                    ('"', i) if i > 0 => { // match ending quotes
+                        self.mark += i + 1; // move after string
                         println!("ending quotes, mark at +{i}");
                         return true;
                     },
+                    ('^', i) if !is_escaped => {
+                        is_escaped = true;
+                        println!("!!! found escape");
+                    },
                     _ => {
+                        is_escaped = false; // TODO: handle escapes
                         println!("string content");
                     },
                 }
