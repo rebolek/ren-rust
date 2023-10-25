@@ -5,6 +5,13 @@ pub mod ren_lexer;
 use crate::ren_lexer::lexer;
 
 #[derive(Debug)]
+enum RenType {
+    Integer,
+    String,
+    Word,
+}
+
+#[derive(Debug)]
 enum ValueType {
     Integer     (i32),
     String      (String),
@@ -13,54 +20,28 @@ enum ValueType {
 
 #[derive(Debug)]
 struct Value {
-    ren_type: String,
-//    rust_type: String,
     value: ValueType,
 }
 
 impl Value {
-    fn make(ren_type: String, value: ValueType) -> Self {
+    fn make(value: ValueType) -> Self {
         Value {
-            ren_type,
             value,
         }
     }
 
-    fn grab(
-        source:   &str,
-        start:    usize,
-        end:      usize,
-        ren_type: &str,
-    )   -> Value {
-        let content: ValueType = match ren_type {
-            "integer" => {
-                ValueType::Integer((&source[start..end]).parse::<i32>().unwrap())
-            },
-            "string" => {
-                ValueType::String(source[start..end].to_string())
-            }
-            _ => {
-                ValueType::String(source[start..end].to_string())
-            },
-        };
-        Value::make(
-            ren_type.to_string(),
-            content,
-        )
-    }
-
     fn convert(
-        ren_type: &str,
+        ren_type: RenType,
         content: String,
     )   -> Value {
         let val: ValueType = match ren_type {
-            "integer" => {
+            RenType::Integer => {
                 ValueType::Integer(content.parse::<i32>().unwrap())
             },
-            "string" => {
+            RenType::String => {
                 ValueType::String(content)
             },
-            "word" => {
+            RenType::Word => {
                 ValueType::Word(content)
             },
             _ => {
@@ -68,7 +49,7 @@ impl Value {
             },
         };
         Value::make(
-            ren_type.to_string(),
+            //ren_type.to_string(),
             val,
         )
     }
@@ -88,19 +69,19 @@ fn parse_line(input: &str) -> Vec<Value> {
 
         if word_lexer.match_integer(&input) {
             mark = word_lexer.get();
-            let value = Value::convert("integer", word_lexer.content.to_string());
+            let value = Value::convert(RenType::Integer, word_lexer.content.to_string());
             values.push(value);
         } else
         if word_lexer.match_string(&input) {
             mark = word_lexer.get();
             println!("STRcontent: {}", &word_lexer.content);
-            let value = Value::convert("string", word_lexer.content.to_string());
+            let value = Value::convert(RenType::String, word_lexer.content.to_string());
             values.push(value);
         } else
         if word_lexer.match_word(&input) {
             mark = word_lexer.get();
             println!("WRD:content: {}", &word_lexer.content);
-            let value = Value::convert("word", word_lexer.content.to_string());
+            let value = Value::convert(RenType::Word, word_lexer.content.to_string());
             values.push(value);
         } else
         if word_lexer.match_delimiter(&input) {

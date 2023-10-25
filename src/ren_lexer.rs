@@ -58,6 +58,7 @@ pub mod lexer {
                     },
                 }
             }
+            false
         }
 
         pub fn match_string(&mut self, input: &str) -> bool {
@@ -101,6 +102,7 @@ pub mod lexer {
                     },
                 }
             }
+            false
         }
 
         pub fn match_integer(&mut self, input: &str) -> bool {
@@ -119,6 +121,7 @@ pub mod lexer {
                     },                                      // fail
                 }
             }
+            false
         }
 
         pub fn match_delimiter(&mut self, input: &str) -> bool {
