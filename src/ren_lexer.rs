@@ -47,7 +47,6 @@ pub mod lexer {
                         self.content.push(c);
                     },
                     (c, i) if self.match_delimiter_char(c) && i > 0 => {
-                        println!("after word at {i}");
                         // end of word
                         self.mark += i;
                         return true;
@@ -59,8 +58,6 @@ pub mod lexer {
                     },
                 }
             }
-                        println!("forbidden");
-            true
         }
 
         pub fn match_string(&mut self, input: &str) -> bool {
@@ -74,26 +71,21 @@ pub mod lexer {
             for (index, char) in string.chars().enumerate() {
                 println!("checking {char} at {index}");
                 match (char, index) {
-                    (c, 0) if c != '"' => { // is this really a string?
+                    (c, 0) if c != '"' => {          // is this really a string?
                         println!("no starting quotes");
                         return false;
                     },
-                    ('"', 0) => { // match starting quotes
-                        println!("starting quotes");
-                    },
-                    ('"', _) if is_escaped => { // escaped quotes, safely ignore
-                        println!("escaped quotes");
+                    ('"', 0) => {}, // match starting quotes
+                    ('"', _) if is_escaped => {     // escaped quotes, safely ignore
                         self.content.push('"');
                         is_escaped = false;
                     },
-                    ('"', i) if i > 0 => { // match ending quotes
+                    ('"', i) if i > 0 => {          // match ending quotes
                         self.mark += i + 1; // move after string
-                        println!("ending quotes, mark at +{i}");
                         return true;
                     },
-                    ('^', _) if !is_escaped => {
+                    ('^', _) if !is_escaped => {    // start escape sequence
                         is_escaped = true;
-                        println!("!!! found escape");
                     },
                     ('(', _) if is_escaped => {
                         // TODO: process escapes in parens
@@ -106,11 +98,9 @@ pub mod lexer {
                         else {
                             self.content.push(char);
                         }
-                        println!("string content");
                     },
                 }
             }
-            true
         }
 
         pub fn match_integer(&mut self, input: &str) -> bool {
@@ -129,8 +119,6 @@ pub mod lexer {
                     },                                      // fail
                 }
             }
-            println!("FIXME: This means there's no WS at end");
-            true
         }
 
         pub fn match_delimiter(&mut self, input: &str) -> bool {
