@@ -9,6 +9,7 @@ enum RenType {
     Integer,
     String,
     Word,
+    Block,
 }
 
 #[derive(Debug)]
@@ -16,6 +17,7 @@ enum ValueType {
     Integer     (i32),
     String      (String),
     Word        (String),
+    Block       (Vec<Value>),
 }
 
 #[derive(Debug)]
@@ -57,36 +59,37 @@ impl Value {
 
 // functions
 
+// TODO: This should be in lexer
+fn match_value(input: &str, target: &mut Vec<Value>, lexer: &mut lexer::State) {
+    if lexer.match_integer(&input) {
+        let value = Value::convert(RenType::Integer, lexer.content.to_string());
+        target.push(value);
+    } else
+    if lexer.match_string(&input) {
+        let value = Value::convert(RenType::String, lexer.content.to_string());
+        target.push(value);
+    } else
+    if lexer.match_word(&input) {
+        let value = Value::convert(RenType::Word, lexer.content.to_string());
+        target.push(value);
+    } else
+    if lexer.match_delimiter(&input) {
+        // NOTE: Any action needed?
+    }
+}
+
 fn parse_line(input: &str) -> Vec<Value> {
     let mut mark = 0;
-    let mut values = Vec::new();
+    let mut values: Vec<Value> = Vec::new();
     let mut break_input = String::new();
     let mut word_lexer = lexer::State::init();
+    let mut target = values;
     loop {
-        let start = mark;
 
-        println!("AT index {start}");
+        println!("AT index {mark}");
 
-        if word_lexer.match_integer(&input) {
-            mark = word_lexer.get();
-            let value = Value::convert(RenType::Integer, word_lexer.content.to_string());
-            values.push(value);
-        } else
-        if word_lexer.match_string(&input) {
-            mark = word_lexer.get();
-            println!("STRcontent: {}", &word_lexer.content);
-            let value = Value::convert(RenType::String, word_lexer.content.to_string());
-            values.push(value);
-        } else
-        if word_lexer.match_word(&input) {
-            mark = word_lexer.get();
-            println!("WRD:content: {}", &word_lexer.content);
-            let value = Value::convert(RenType::Word, word_lexer.content.to_string());
-            values.push(value);
-        } else
-        if word_lexer.match_delimiter(&input) {
-            mark = word_lexer.get();
-        }
+        match_value(&input, &mut target, &mut word_lexer);
+        mark = word_lexer.get();
 
         let len = input.len();
         println!("len: {len}, mark:{:?}", word_lexer.get());
@@ -101,6 +104,7 @@ fn parse_line(input: &str) -> Vec<Value> {
         }
 
     }
+    let values = target;
     values
 }
 
