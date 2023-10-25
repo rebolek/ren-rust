@@ -32,20 +32,35 @@ pub mod lexer {
             self.mark = value;
         }
 
-        pub fn match_word(&mut self, input: &str) {
-            for (index, char) in input.chars().enumerate() {
+        pub fn match_word(&mut self, input: &str) -> bool {
+            let string = &input[self.mark..];
+            self.clear_content();
+            for (index, char) in string.chars().enumerate() {
+                println!("checking {char} at {index}");
                 match (char, index) {
-                    (c, 0) if c.is_alphabetic()    => {}, // starts with alphabetic char
-                    (c, _) if c.is_alphanumeric()  => {}, // continues with alphanumeric
-                    (c, _) if self.match_delimiter_char(c) => {
-                        //State::set(&mut State {mark: Some(i)}, Some(i));
-                    }, // end of word
-                    _                            => {
-                        //State::set(&mut State {mark:  None}, None);
-                    },    // fail
+                    (c, 0) if c.is_alphabetic() => {
+                        // starts with alphabetic char
+                        self.content.push(c);
+                    },
+                    (c, i) if c.is_alphanumeric() && i > 0 => {
+                        // continues with alphanumeric
+                        self.content.push(c);
+                    },
+                    (c, i) if self.match_delimiter_char(c) && i > 0 => {
+                        println!("after word at {i}");
+                        // end of word
+                        self.mark += i;
+                        return true;
+                    },
+                    _ => {
+                        println!("forbidden");
+                        // forbidden char
+                        return false;
+                    },
                 }
             }
-            //State::set(&mut State {mark: Some(input.len())}, Some(input.len()));
+                        println!("forbidden");
+            true
         }
 
         pub fn match_string(&mut self, input: &str) -> bool {
@@ -80,9 +95,13 @@ pub mod lexer {
                         is_escaped = true;
                         println!("!!! found escape");
                     },
+                    ('(', _) if is_escaped => {
+                        // TODO: process escapes in parens
+                    }
                     _ => {
                         if is_escaped {
-                            is_escaped = false; // TODO: handle escapes
+                            is_escaped = false;
+                            self.content.push(process_escape(char));
                         }
                         else {
                             self.content.push(char);
@@ -131,6 +150,13 @@ pub mod lexer {
                 // TODO: check for other delimiters
                 false
             }
+        }
+    }
+    fn process_escape(input: char) -> char {
+        match input {
+            '/' => {'\n'},
+            '-' => {'\t'},
+            _   => {input},
         }
     }
 }

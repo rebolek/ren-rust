@@ -59,7 +59,10 @@ impl Value {
             },
             "string" => {
                 ValueType::String(content)
-            }
+            },
+            "word" => {
+                ValueType::Word(content)
+            },
             _ => {
                 ValueType::String(content)
             },
@@ -90,8 +93,14 @@ fn parse_line(input: &str) -> Vec<Value> {
         } else
         if word_lexer.match_string(&input) {
             mark = word_lexer.get();
-            println!("content: {}", &word_lexer.content);
+            println!("STRcontent: {}", &word_lexer.content);
             let value = Value::convert("string", word_lexer.content.to_string());
+            values.push(value);
+        } else
+        if word_lexer.match_word(&input) {
+            mark = word_lexer.get();
+            println!("WRD:content: {}", &word_lexer.content);
+            let value = Value::convert("word", word_lexer.content.to_string());
             values.push(value);
         } else
         if word_lexer.match_delimiter(&input) {
