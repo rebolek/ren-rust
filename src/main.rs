@@ -25,6 +25,7 @@ impl Value {
             value,
         }
     }
+
     fn grab(
         source:   &str,
         start:    usize,
@@ -47,6 +48,27 @@ impl Value {
             content,
         )
     }
+
+    fn convert(
+        ren_type: &str,
+        content: String,
+    )   -> Value {
+        let val: ValueType = match ren_type {
+            "integer" => {
+                ValueType::Integer(content.parse::<i32>().unwrap())
+            },
+            "string" => {
+                ValueType::String(content)
+            }
+            _ => {
+                ValueType::String(content)
+            },
+        };
+        Value::make(
+            ren_type.to_string(),
+            val,
+        )
+    }
 }
 
 // functions
@@ -63,12 +85,13 @@ fn parse_line(input: &str) -> Vec<Value> {
 
         if word_lexer.match_integer(&input) {
             mark = word_lexer.get();
-            let value = Value::grab(&input, start, mark, "integer");
+            let value = Value::convert("integer", word_lexer.content.to_string());
             values.push(value);
         } else
         if word_lexer.match_string(&input) {
             mark = word_lexer.get();
-            let value = Value::grab(&input, start + 1, mark -1, "string");
+            println!("content: {}", &word_lexer.content);
+            let value = Value::convert("string", word_lexer.content.to_string());
             values.push(value);
         } else
         if word_lexer.match_delimiter(&input) {
