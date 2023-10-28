@@ -16,7 +16,7 @@ pub enum ValueType {
 
 #[derive(Debug)]
 pub struct Value {
-    value: ValueType,
+    pub value: ValueType,
 }
 
 impl Value {
@@ -40,6 +40,9 @@ impl Value {
             RenType::Word => {
                 ValueType::Word(content)
             },
+//          RenType::Block => {
+//              ValueType::Block(content)
+//          },
             _ => {
                 ValueType::String(content)
             },

@@ -1,5 +1,7 @@
+use crate::types;
 use crate::types::Value;
 use crate::types::RenType;
+use crate::types::ValueType;
 
 // charsets
 
@@ -10,6 +12,8 @@ const CHS_SIGNS: [char; 2] = ['-', '+']; // or STATIC ?
 pub struct State {
     pub mark: usize, // cursor position in original string
     pub content: String,
+    pub values: Vec<Value>,
+    pub block_stack: Vec<Vec<Value>>,
 }
 
 impl State {
@@ -19,6 +23,8 @@ impl State {
         State {
             mark: 0,
             content: "".to_string(),
+            values: Vec::new(),
+            block_stack: Vec::new(),
         }
     }
 
@@ -35,19 +41,22 @@ impl State {
     }
 
     // main matcher
-    pub fn match_value(&mut self, input: &str, target: &mut Vec<Value>) {
+    pub fn match_value(&mut self, input: &str) {
         if self.match_integer(&input) {
             let value = Value::convert(RenType::Integer, self.content.to_string());
-            target.push(value);
+            self.values.push(value);
         } else
         if self.match_string(&input) {
             let value = Value::convert(RenType::String, self.content.to_string());
-            target.push(value);
+            self.values.push(value);
         } else
         if self.match_word(&input) {
             let value = Value::convert(RenType::Word, self.content.to_string());
-            target.push(value);
+            self.values.push(value);
         } else
+        if self.match_block(&input) {
+            println!("BLOCK");
+        }
         if self.match_delimiter(&input) {
             // NOTE: Any action needed?
         }
@@ -158,7 +167,25 @@ impl State {
                 ('[', 0) => {
                     // block start matched
 
+                    self.mark += 1;
+
+                    //self.block_stack.push(self.values);
+                    self.block_stack.push(std::mem::take(&mut self.values));
+                    self.values = Vec::new();
+
+                    return true;
                 },
+                (']', _) => {
+                    self.mark += 1;
+
+                    let len = self.block_stack.len();
+                    println!("block stack has {len} values");
+                    let mut last_block = self.block_stack.pop().expect("No block on stack");
+                    last_block.push( types::Value { value: ValueType::Block(std::mem::take (&mut self.values)) } );
+                    self.values = last_block;
+
+                    return true;
+                }
                 _ => {
                     return false;
                 }

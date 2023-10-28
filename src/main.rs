@@ -10,15 +10,13 @@ use ren_lexer::State;
 
 fn parse_line(input: &str) -> Vec<Value> {
     let mut mark = 0;
-    let mut values: Vec<Value> = Vec::new();
     let mut break_input = String::new();
     let mut word_lexer = State::init();
-    let mut target = values;
     loop {
 
         println!("AT index {mark}");
 
-        word_lexer.match_value(&input, &mut target);
+        word_lexer.match_value(&input);
         mark = word_lexer.get();
 
         let len = input.len();
@@ -28,14 +26,15 @@ fn parse_line(input: &str) -> Vec<Value> {
             .read_line(&mut break_input)
             .expect("Failed to read line");
 
+        println!("len={len}, mark={mark}");
+
         // end condition
         if len == mark {
             break;
         }
 
     }
-    let values = target;
-    values
+    word_lexer.values
 }
 
 fn repl() {
