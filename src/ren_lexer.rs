@@ -42,6 +42,10 @@ impl State {
 
     // main matcher
     pub fn match_value(&mut self, input: &str) {
+        println!("MARK: {}, INPUT: '{}'", self.mark, &input[self.mark..]);
+        if self.match_block(&input) {
+            println!("BLOCK");
+        } else
         if self.match_integer(&input) {
             let value = Value::convert(RenType::Integer, self.content.to_string());
             self.values.push(value);
@@ -54,17 +58,14 @@ impl State {
             let value = Value::convert(RenType::Word, self.content.to_string());
             self.values.push(value);
         } else
-        if self.match_block(&input) {
-            println!("BLOCK");
-        }
-        if self.match_delimiter(&input) {
-            // NOTE: Any action needed?
+        if self.match_whitespace(&input) {
         }
     }
 
     // submatchers
 
     fn match_word(&mut self, input: &str) -> bool {
+        println!("MATCH: word");
         let string = &input[self.mark..];
         self.clear_content();
         for (index, char) in string.chars().enumerate() {
@@ -72,19 +73,21 @@ impl State {
             match (char, index) {
                 (c, 0) if c.is_alphabetic() => {
                     // starts with alphabetic char
+                    self.mark += 1;
                     self.content.push(c);
                 },
                 (c, i) if c.is_alphanumeric() && i > 0 => {
                     // continues with alphanumeric
+                    self.mark += 1;
                     self.content.push(c);
                 },
                 (c, i) if self.match_delimiter_char(c) && i > 0 => {
+                    println!("delim matched");
                     // end of word
-                    self.mark += i;
                     return true;
                 },
                 _ => {
-                    println!("forbidden");
+                    println!("WORD:forbidden");
                     // forbidden char
                     return false;
                 },
@@ -99,6 +102,7 @@ impl State {
     }
 
     fn match_inline_string(&mut self, input: &str) -> bool {
+        println!("MATCH: string-inline");
         let string = &input[self.mark..];
         let mut is_escaped = false;
         self.clear_content();
@@ -140,9 +144,11 @@ impl State {
     }
 
     fn match_integer(&mut self, input: &str) -> bool {
+        println!("MATCH: integer");
         let string = &input[self.mark..];
         self.clear_content();
         for (index, char) in string.chars().enumerate() {
+            println!("checking {char} at {index}");
             match (char, index) {
                 (c, 0) if CHS_SIGNS.contains(&c) => {self.content.push(c)}, // + or -
                 (c, _) if c.is_digit(10) => {self.content.push(c)}, // digit
@@ -160,9 +166,11 @@ impl State {
     }
 
     fn match_block(&mut self, input: &str) -> bool {
+        println!("MATCH: block");
         let string = &input[self.mark..];
         self.clear_content();
         for (index, char) in string.chars().enumerate() {
+            println!("checking {char} at {index}");
             match (char, index) {
                 ('[', 0) => {
                     // block start matched
@@ -195,6 +203,20 @@ impl State {
         false
     }
 
+    fn match_whitespace(&mut self, input: &str) -> bool {
+        println!("MATCH: whitespace");
+        let string = &input[self.mark..];
+        for (index, char) in string.chars().enumerate() {
+            println!("checking {char} at {index}");
+            if char.is_whitespace() {
+                println!("WS matched");
+                self.mark += 1;
+                return true;
+            }
+        }
+        false
+    }
+
     fn match_delimiter(&mut self, input: &str) -> bool {
         let string = &input[self.mark..];
         if self.match_delimiter_char(string.chars().next().unwrap()) {
@@ -206,7 +228,9 @@ impl State {
     }
 
     fn match_delimiter_char(&mut self, input: char) -> bool {
-        if input.is_whitespace() {
+        if input.is_whitespace()
+        || input == '[' || input == '(' || input == '{' 
+        || input == ']' || input == ')' || input == '}' {
             true
         } else {
             // TODO: check for other delimiters
