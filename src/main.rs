@@ -108,13 +108,13 @@ Select mode:
 
 You can use first letters instead of full words.
 ");
-    print!("->");
+    print!("-> ");
     io::stdout().flush().expect("Failed to flush");
     let mut input = String::new();
     io::stdin()
         .read_line(&mut input)
         .expect("Failed to read line");
-
+    input.pop();
     let inp: &str = &input;
 
     match inp {
@@ -127,6 +127,7 @@ You can use first letters instead of full words.
 
 fn main() {
     let session = welcome();
+    println!("session type: {:?}", session);
     match session {
         Some(value) => {repl(&value);},
         None => {},

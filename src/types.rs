@@ -3,6 +3,9 @@ pub enum RenType {
     Integer,
     String,
     Word,
+    LitWord,
+    SetWord,
+    GetWord,
     Block,
 }
 
@@ -11,7 +14,19 @@ pub enum ValueType {
     Integer     (i32),
     String      (String),
     Word        (String),
+    LitWord     (String),
+    SetWord     (String),
+    GetWord     (String),
     Block       (Vec<Value>),
+}
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub enum WordType {
+    Word,
+    LitWord,
+    SetWord,
+    GetWord,
 }
 
 #[derive(Debug)]
@@ -39,6 +54,15 @@ impl Value {
             },
             RenType::Word => {
                 ValueType::Word(content)
+            },
+            RenType::SetWord => {
+                ValueType::SetWord(content)
+            },
+            RenType::GetWord => {
+                ValueType::GetWord(content)
+            },
+            RenType::LitWord => {
+                ValueType::LitWord(content)
             },
 //          RenType::Block => {
 //              ValueType::Block(content)
